@@ -1,0 +1,162 @@
+defmodule Models.User do
+  alias Models.Relationship, as: Relationship
+  alias Models.Message, as: Message
+
+  defstruct [
+    # Identifiers
+    :email,
+    :username,
+    :password,
+    :_id,
+    mod_level: 0,
+
+    # Statistics
+    stars: 0,
+    demons: 0,
+    creator_points: 0,
+    secret_coins: 0,
+    user_coins: 0,
+    diamonds: 0,
+    ranking: 0,
+
+    # Cosmetics
+    primary_color: 0,
+    secondary_color: 0,
+    icon_id: 0,
+    ship_id: 0,
+    ball_id: 0,
+    ufo_id: 0,
+    wave_id: 0,
+    robot_id: 0,
+    spider_id: 0,
+    trail_id: 0,
+    glow_id: 0,
+    explosion_id: 0,
+    icon_type: 0,
+
+    # Profile status
+    message_state: 1,
+    friends_state: 0,
+    comment_history_state: 0,
+
+    # Socials
+    twitter: "",
+    twitch: "",
+    youtube: "",
+
+    # ???
+    special: 0
+  ]
+
+  @doc """
+    Retrieves the number of new friends, incoming friend requests, and incoming messages.
+  """
+  def incoming(user_id, requester)
+    when is_integer(user_id)
+  do
+    if user_id !== requester do
+      %{
+        messages: 0,
+        friend_requests: 0,
+        new_friends: 0
+      }
+    else
+      %{
+        # List only unread messages
+        messages: Message.list_incoming_messages(user_id) |> Enum.filter(&(not &1.read)),
+        # List only incoming friend requests
+        friend_requests: Relationship.of(user_id, 0)
+        # Filter out all the outgoing friend requests
+        |> Enum.filter(&((&1 |> Enum.at(0)) === user_id))
+        |> length(),
+        new_friends: 0
+      }
+      # unimplemented
+    end
+  end
+
+  def to_string(%{ _id: user_id } = user, requester)
+    when is_integer(user_id)
+  do
+    { _, relationship } = if requester !== nil,
+      do: Relationship.with(user_id, requester),
+      else: { :ok, nil }
+
+    load_profile = fn blocked ->
+      # ---
+      friends_state = case relationship do
+        nil -> 0
+        r -> case r["status"] do
+          # If the relationship is a friend request one, send 3 or 4
+          0 -> if r["user_ids"] |> Enum.at(0) === user_id, do: 3, else: 4
+          n -> n
+        end
+      end
+
+      # ---
+      %{ messages: m, friend_requests: fr, new_friends: nf } = incoming(user_id, requester)
+
+      [
+        "1:#{user.username}",
+        ":2:#{user._id}",
+        ":3:#{user.stars}",
+        ":4:#{user.demons}",
+        ":6:#{user.ranking}",
+        ":7:#{user._id}",
+        ":8:#{user.creator_points}",
+        ":9:#{user.icon_id}",
+        ":10:#{user.primary_color}",
+        ":11:#{user.secondary_color}",
+        ":13:#{user.secret_coins}",
+        ":14:#{user.icon_type}",
+        ":15:#{user.special}",
+        ":16:#{user._id}",
+        ":17:#{user.user_coins}",
+        ":18:#{user.message_state}",
+        ":19:#{user.friends_state}",
+        ":20:#{user.youtube}",
+        ":21:#{user.icon_id}",
+        ":22:#{user.ship_id}",
+        ":23:#{user.ball_id}",
+        ":24:#{user.ufo_id}",
+        ":25:#{user.wave_id}",
+        ":26:#{user.robot_id}",
+        ":27:#{user.trail_id}",
+        ":28:#{user.glow_id}",
+        ":29:#{blocked}",
+        ":30:#{user.ranking}",
+        ":31:#{friends_state}",
+        ":38:#{m}",
+        ":39:#{fr}",
+        ":40:#{nf}",
+        ":41:0",
+        ":43:#{user.spider_id}",
+        ":44:#{user.twitter}",
+        ":45:#{user.twitch}",
+        ":46:#{user.diamonds}",
+        ":48:#{user.explosion_id}",
+        ":49:#{user.mod_level}",
+        ":50:#{user.comment_history_state}"
+      ]
+        |> Enum.join("")
+    end
+
+    if relationship["status"] === 2 do
+      # Refuse request if blocked
+      [ _ | [ blockee | _ ] ] = relationship["user_ids"]
+      IO.inspect [user_id, blockee]
+      if blockee == user_id, do: "-1", else: load_profile.(1)
+    else
+      load_profile.(0)
+    end
+  end
+
+  def get(user_id) when is_integer(user_id) do
+    case Mongo.find_one(:mongo, "users", %{ _id: user_id }) do
+      nil -> -1
+      document -> new(document)
+    end
+  end
+
+  use ExConstructor
+end
