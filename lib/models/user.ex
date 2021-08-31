@@ -158,5 +158,15 @@ defmodule Models.User do
     end
   end
 
+  def search(str) when is_binary(str) do
+    query = %{ "$text" => %{ "$search" => str } }
+    options = [ score: %{ "$meta" => "textScore" } ]
+
+    Mongo.find(:mongo, "users", query, options)
+      |> Enum.filter(fn user -> user["score"] > 0.6 end)
+      |> Enum.map(fn user -> new(user) |> to_string(nil) end)
+      |> Enum.join("|")
+  end
+
   use ExConstructor
 end

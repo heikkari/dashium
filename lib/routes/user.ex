@@ -23,7 +23,14 @@ defmodule Routes.User do
         # Happens if the user provides an ID that is not an integer.
         ArgumentError -> send(conn, 400, "-1")
       end
+    end
+  end
 
+  post "/getGJUsers20.php" do
+    if Utils.is_field_missing [ "str" ], conn.params do
+      send(conn, 400, "-1")
+    else
+      send(conn, 200, User.search conn.params["str"])
     end
   end
 

@@ -6,20 +6,25 @@ defmodule Routes.Authentication do
 
   defp check_constraints_auth(required_fields, map) do
     fields = [
-      # [ field, { min_length, error_code }, { max_length, error_code }, confirmation_field?, confirmation_error? ]
-      [ "userName", { 3, -9 }, { 16, -4 }, nil, nil ],
-      [ "password", { 6, -8 }, { 16, -5 }, "confirmPassword", -7 ],
-      [ "email", { 3, -6 }, { 32, -6 }, "confirmEmail", -99 ]
+      # [ field, confirmation_field?, confirmation_error? ]
+      [ "userName", nil, nil ],
+      [ "password", "confirmPassword", -7 ],
+      [ "email", "confirmEmail", -99 ]
     ]
       |> Enum.filter(fn [ head | _ ] -> Enum.member? required_fields, head end)
 
-    Enum.map(fields, fn [ field, { mnl, min_err }, { mxl, max_err }, cfield, cerr ] ->
+    Enum.map(fields, fn [ field, c_field, c_err ] ->
+      # Get the maximum lengths for each field.
+      [ min: [ mnl | [ min_err | _ ] ], max: [ mxl | [ max_err | _ ] ] ] =
+        Application.get_env(:app, :auth_limits)[field]
+
+      # ---
       len = byte_size(map[field])
 
       cond do
         len < mnl -> min_err
         len > mxl -> max_err
-        cfield !== nil -> if map[field] !== map[cfield], do: cerr, else: 1
+        c_field !== nil -> if map[field] !== map[c_field], do: c_err, else: 1
         true -> 1
       end
     end)
