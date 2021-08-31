@@ -30,7 +30,12 @@ defmodule Routes.User do
     if Utils.is_field_missing [ "str" ], conn.params do
       send(conn, 400, "-1")
     else
-      send(conn, 200, User.search conn.params["str"])
+      result = User.search conn.params["str"] |> String.trim
+      send(
+        conn,
+        (if result === "", do: 404, else: 200),
+        (if result === "", do: "-1", else: result)
+      )
     end
   end
 

@@ -27,8 +27,6 @@ defmodule Api.UserTest do
       |> String.split(",")
       |> Enum.at(0)
 
-    IO.inspect id
-
     # Get user by ID
     reply = conn(:post, @user_get, %{ targetAccountID: id })
       |> put_req_header("content-type", @content_type)
@@ -51,8 +49,6 @@ defmodule Api.UserTest do
     reply = conn(:post, @user_search, %{ str: params.userName })
       |> put_req_header("content-type", @content_type)
       |> Router.call(@options)
-
-    #IO.inspect(reply.resp_body)
 
     assert reply.state   == :sent
     assert reply.status  == 200
