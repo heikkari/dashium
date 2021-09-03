@@ -22,8 +22,10 @@ defmodule Plugs.Authentication do
         send_401(conn)
       else
         if not Account.auth(user_id |> String.to_integer, gjp),
-          do: send_401(conn)
+          do: send_401(conn), else: conn
       end
+    else
+      conn
     end
   end
 
