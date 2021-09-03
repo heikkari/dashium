@@ -3,30 +3,13 @@ defmodule Models.Account do
 
   @spec auth(integer, binary) :: boolean
   def auth(user_id, gjp) when is_integer(user_id) and is_binary(gjp) do
-    validate = fn { :ok, decoded_value } ->
-      key = "37526" |> String.to_charlist()
-
-      unxored =
-        (String.to_charlist(decoded_value)
-        |> Enum.with_index
-        |> Enum.map(
-          fn { byte, idx } ->
-            mod = rem(idx, length key)
-            Bitwise.bxor(byte, key |> Enum.at(mod))
-          end
-        )
-        |> to_string)
-
-      case Mongo.find_one(:mongo, "users", %{ _id: user_id }) do
-        nil -> false
-        document -> case check_pass(document, unxored) do
-          { :error, _ } -> false
-          { :ok, _ } -> true
-        end
+    case Mongo.find_one(:mongo, "users", %{ _id: user_id }) do
+      nil -> false
+      document -> case check_pass(document, Utils.gjp(gjp, true)) do
+        { :error, _ } -> false
+        { :ok, _ } -> true
       end
     end
-
-    Base.decode64(gjp) |> validate.()
   end
 
   def check_pass(document, password) when is_binary(password) do

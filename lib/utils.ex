@@ -14,6 +14,33 @@ defmodule Utils do
       |> Enum.join("")
   end
 
+  def gjp(input, decode) when is_binary(input) do
+    xor = fn decoded_value ->
+      key = "37526" |> String.to_charlist()
+
+      String.to_charlist(decoded_value)
+        |> Enum.with_index
+        |> Enum.map(
+          fn { byte, idx } ->
+            mod = rem(idx, length key)
+            Bitwise.bxor(byte, key |> Enum.at(mod))
+          end
+        )
+        |> List.to_string
+    end
+
+    try do
+      if decode do
+        { :ok, decoded } = Base.decode64(input)
+        xor.(decoded)
+      else
+        xor.(input) |> Base.encode64
+      end
+    rescue
+      MatchError -> "[error]"
+    end
+  end
+
   def is_field_missing(fields, map) do
     (Enum.map(fields, &(map[&1] === nil))
       |> Enum.filter(&(&1))

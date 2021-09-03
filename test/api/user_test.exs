@@ -47,7 +47,8 @@ defmodule Api.UserTest do
     id = reply.resp_body |> String.split(",") |> Enum.at(0)
 
     # Update the user
-    reply = conn(:post, @user_update, %{ accountID: id, mS: 1 })
+    gjp = Utils.gjp(params.password, false)
+    reply = conn(:post, @user_update, %{ accountID: id, gjp: gjp, mS: 1 })
       |> put_req_header("content-type", @content_type)
       |> Router.call(@options)
 
