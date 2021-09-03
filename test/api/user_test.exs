@@ -10,22 +10,12 @@ defmodule Api.UserTest do
   @content_type "application/x-www-form-urlencoded"
 
   test "Testing /getGJUserInfo20.php" do
-    rs = Utils.random_string(16)
-    params = %{ password: rs, userName: rs, email: rs <> "@gmail.com", confirmPassword: rs, confirmEmail: rs <> "@gmail.com" }
-
     # Register an account
-    reply = conn(:post, @register, params)
-      |> put_req_header("content-type", @content_type)
-      |> Router.call(@options)
+    params = Utils.test_register() |> Enum.at(0)
 
     # Then get its ID
-    reply = conn(:post, @login, params)
-      |> put_req_header("content-type", @content_type)
-      |> Router.call(@options)
-
-    id = reply.resp_body
-      |> String.split(",")
-      |> Enum.at(0)
+    reply = Utils.test_login(params)
+    id = reply.resp_body |> String.split(",") |> Enum.at(0)
 
     # Get user by ID
     reply = conn(:post, @user_get, %{ targetAccountID: id })
@@ -37,13 +27,8 @@ defmodule Api.UserTest do
   end
 
   test "Testing /getGJUsers20.php" do
-    rs = Utils.random_string(16)
-    params = %{ password: rs, userName: rs, email: rs <> "@gmail.com", confirmPassword: rs, confirmEmail: rs <> "@gmail.com" }
-
     # Register an account
-    conn(:post, @register, params)
-      |> put_req_header("content-type", @content_type)
-      |> Router.call(@options)
+    params = Utils.test_register() |> Enum.at(0)
 
     # Search for user
     reply = conn(:post, @user_search, %{ str: params.userName })
