@@ -9,7 +9,7 @@ defmodule Routes.Base do
 
       defp send(conn, code, data) when is_integer(code) do
         conn
-          |> Plug.Conn.put_resp_content_type("text/html")
+          |> Plug.Conn.put_resp_content_type("text/plain")
           |> send_resp(code, data)
       end
 
