@@ -9,6 +9,7 @@ config :app, id_epoch: 1293840000
 
 # Security
 config :app, accepted_email_domains: [ "gmail.com" ]
+config :app, accepted_chars: "qwertyuioasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890!@#$%^&*()_+{}[]-=;'\\:\"|,./<>?`~"
 
 # Authentication. `min` and `max` are an array like [length, error code].
 config :app, auth_limits: %{
