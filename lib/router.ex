@@ -5,6 +5,7 @@ defmodule Router do
 
   plug :match
   plug Plug.Parsers, parsers: [:urlencoded]
+  plug Plugs.Authentication
   plug :dispatch
 
   forward "/database/accounts/", to: Routes.Authentication
