@@ -75,6 +75,65 @@ defmodule Models.User do
     end
   end
 
+  def update_stats(%{
+    "accountID" => id,
+    "coins" => secret_coins,
+    "userCoins" => user_coins
+  } = params)
+    when is_map(params)
+  do
+    user = get(id |> String.to_integer)
+    anti_cheat_settings = Application.get_env(:app, :anti_cheat)
+
+    modified_stats =
+      Enum.filter([ :stars, :demons, :diamonds ], &(params[&1 |> Atom.to_string] !== nil))
+      # TODO: Implement better anti-cheat
+      |> Enum.map(fn stat ->
+        [ max: max, max_diff: max_diff ] = anti_cheat_settings[stat]
+
+        # Calculate new values
+        new_val = params[stat |> Atom.to_string]
+        diff = new_val - user[stat]
+
+        if (new_val < max and (new_val >= user[stat]) and diff <= max_diff),
+          do: { "$set", { stat, new_val } }
+      end)
+      |> Enum.filter(&(&1 !== nil))
+
+    [ max: max_secret_coins, max_diff: diff_max_secret_coins ] = anti_cheat_settings.secret_coins
+    [ max: max_user_coins, max_diff: diff_max_user_coins ] = anti_cheat_settings.user_coins
+
+    diff_secret_coins = secret_coins - user.secret_coins
+    diff_user_coins = user_coins - user.user_coins
+
+    modified_coins = cond do
+      secret_coins > max_secret_coins or user_coins > max_user_coins -> %{}
+      diff_secret_coins < 0 or diff_user_coins < 0 -> %{}
+      diff_secret_coins > diff_max_secret_coins or diff_user_coins > diff_max_user_coins -> %{}
+      true -> [
+        {"$set", [secret_coins: secret_coins]},
+        {"$set", [user_coins: user_coins]}
+      ]
+    end
+
+    to_dashium_case = &(((&1 |> String.downcase |> String.slice(3..-1)) <> "_id") |> String.to_atom)
+
+    modified_icons =
+      Map.keys(params)
+        |> Enum.filter(&(&1 |> String.slice(0..3) === "acc"))
+        |> Enum.filter(&(user[to_dashium_case.(&1)] !== params[&1] |> String.to_integer))
+        |> Enum.map(&({ "$set", { to_dashium_case.(&1), params[&1] |> String.to_integer }}))
+
+    modified_icons =
+      if params["iconType"] !== nil do
+        modified_icons ++ [{ "$set", [ icon_type: params["iconType"] ] }]
+      else
+        modified_icons
+      end
+
+    Mongo.update_one(:mongo, "users", [id: id], modified_stats ++ modified_icons ++ modified_coins)
+  end
+
   def to_string(%{ _id: user_id } = user, requester)
     when is_integer(user_id)
   do

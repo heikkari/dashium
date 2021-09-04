@@ -91,6 +91,22 @@ defmodule Routes.User do
     end
   end
 
+  post "/updateGJUserScore22.php" do
+    if Utils.is_field_missing [ "accountID", "seed2" ], conn.params do
+      send(conn, 400, "-1")
+    else
+      try do
+        case User.update_stats(conn.params) do
+          { :error, _ } -> send(conn, 500, "-1")
+          { :ok, _ } -> send(conn, 200, "1")
+        end
+      rescue
+        ArgumentError -> send(conn, 400, "-1")
+      end
+
+    end
+  end
+
   match _ do
     send_resp(conn, 404, "Not found!")
   end
