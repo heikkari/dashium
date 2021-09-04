@@ -6,10 +6,6 @@ defmodule Plugs.Validator do
     options
   end
 
-  defp send_400(conn) do
-
-  end
-
   def validate(conn) do
     accepted_chars = Application.get_env(:app, :accepted_chars)
 
