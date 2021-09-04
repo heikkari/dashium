@@ -14,27 +14,36 @@ defmodule Utils do
       |> Enum.join("")
   end
 
+  def chk(values \\ [], key) when is_list(values) and is_atom(key) do
+    salt = Application.get_env(:app, :salt)[key]
+
+    :crypto.hash(:sha, values ++ [salt] |> Enum.join(""))
+      |> Base.encode16
+      |> xor(key)
+      |> Base.encode64()
+  end
+
+  def xor(input, key) when is_binary(input) and is_atom(key) do
+    key = Application.get_env(:app, :xor)[key] |> String.to_charlist()
+
+    String.to_charlist(input)
+      |> Enum.with_index
+      |> Enum.map(
+        fn { byte, idx } ->
+          mod = rem(idx, length key)
+          Bitwise.bxor(byte, key |> Enum.at(mod))
+        end
+      )
+      |> List.to_string
+  end
+
   def gjp(input, decode) when is_binary(input) do
-    xor = fn decoded_value ->
-      key = "37526" |> String.to_charlist()
-
-      String.to_charlist(decoded_value)
-        |> Enum.with_index
-        |> Enum.map(
-          fn { byte, idx } ->
-            mod = rem(idx, length key)
-            Bitwise.bxor(byte, key |> Enum.at(mod))
-          end
-        )
-        |> List.to_string
-    end
-
     try do
       if decode do
         { :ok, decoded } = Base.decode64(input)
-        xor.(decoded)
+        xor(decoded, :authentication)
       else
-        xor.(input) |> Base.encode64
+        xor(input, :authentication) |> Base.encode64
       end
     rescue
       MatchError -> "[error]"

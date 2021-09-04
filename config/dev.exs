@@ -20,6 +20,17 @@ config :app, anti_cheat: %{
   diamonds: [ max: nil, max_diff: 10 ]
 }
 
+# XOR keys
+config :app, xor: [
+  authentication: "37526",
+  user_profile: "85271",
+]
+
+# Salts
+config :app, salt: [
+  user_profile: "xI35fsAapCRg",
+]
+
 # Authentication. `min` and `max` are an array like [length, error code].
 config :app, auth_limits: %{
   "userName" => [ min: [3, -9], max: [16, -4] ],

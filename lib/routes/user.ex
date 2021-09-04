@@ -92,13 +92,28 @@ defmodule Routes.User do
   end
 
   post "/updateGJUserScore22.php" do
-    if Utils.is_field_missing [ "accountID", "seed2" ], conn.params do
+    fields = [
+      "accountID", "userCoins", "demons", "stars",
+      "coins", "iconType", "icon", "diamonds",
+      "accIcon", "accShip", "accBall", "accBird",
+      "accDart", "accRobot", "accGlow", "accSpider",
+      "accExplosion"
+    ]
+
+    if Utils.is_field_missing fields ++ ["seed2"], conn.params do
       send(conn, 400, "-1")
     else
       try do
-        case User.update_stats(conn.params) do
-          { :error, _ } -> send(conn, 500, "-1")
-          { :ok, _ } -> send(conn, 200, "1")
+        values = fields |> Enum.map(&(conn.params[&1]))
+        chk = Utils.chk(values, :user_profile)
+
+        if chk === conn.params["seed2"] do
+          case User.update_stats(conn.params) do
+            { :error, _ } -> send(conn, 500, "-1")
+            { :ok, _ } -> send(conn, 200, "1")
+          end
+        else
+          send(conn, 401, "-1")
         end
       rescue
         ArgumentError -> send(conn, 400, "-1")

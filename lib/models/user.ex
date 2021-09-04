@@ -25,8 +25,8 @@ defmodule Models.User do
     icon_id: 0,
     ship_id: 0,
     ball_id: 0,
-    ufo_id: 0,
-    wave_id: 0,
+    bird_id: 0,
+    dart_id: 0,
     robot_id: 0,
     spider_id: 0,
     trail_id: 0,
@@ -82,21 +82,20 @@ defmodule Models.User do
   } = params)
     when is_map(params)
   do
-    user = get(id |> String.to_integer)
+    user = get(id |> String.to_integer) |> Map.from_struct
     anti_cheat_settings = Application.get_env(:app, :anti_cheat)
 
     modified_stats =
-      Enum.filter([ :stars, :demons, :diamonds ], &(params[&1 |> Atom.to_string] !== nil))
       # TODO: Implement better anti-cheat
-      |> Enum.map(fn stat ->
+      Enum.map([ :stars, :demons, :diamonds ], fn stat ->
         [ max: max, max_diff: max_diff ] = anti_cheat_settings[stat]
 
         # Calculate new values
         new_val = params[stat |> Atom.to_string]
         diff = new_val - user[stat]
 
-        if (new_val < max and (new_val >= user[stat]) and diff <= max_diff),
-          do: { "$set", { stat, new_val } }
+        if (new_val <= max and (new_val > user[stat]) and diff <= max_diff),
+          do: { "$set", %{ stat => new_val } }
       end)
       |> Enum.filter(&(&1 !== nil))
 
@@ -107,12 +106,13 @@ defmodule Models.User do
     diff_user_coins = user_coins - user.user_coins
 
     modified_coins = cond do
-      secret_coins > max_secret_coins or user_coins > max_user_coins -> %{}
-      diff_secret_coins < 0 or diff_user_coins < 0 -> %{}
-      diff_secret_coins > diff_max_secret_coins or diff_user_coins > diff_max_user_coins -> %{}
+      secret_coins === user.secret_coins or user_coins === user.user_coins -> []
+      secret_coins > max_secret_coins or user_coins > max_user_coins -> []
+      diff_secret_coins < 0 or diff_user_coins < 0 -> []
+      diff_secret_coins > diff_max_secret_coins or diff_user_coins > diff_max_user_coins -> []
       true -> [
-        {"$set", [secret_coins: secret_coins]},
-        {"$set", [user_coins: user_coins]}
+        {"$set", %{ secret_coins: secret_coins } },
+        {"$set", %{ user_coins: user_coins } }
       ]
     end
 
@@ -121,16 +121,10 @@ defmodule Models.User do
     modified_icons =
       Map.keys(params)
         |> Enum.filter(&(&1 |> String.slice(0..3) === "acc"))
-        |> Enum.filter(&(user[to_dashium_case.(&1)] !== params[&1] |> String.to_integer))
-        |> Enum.map(&({ "$set", { to_dashium_case.(&1), params[&1] |> String.to_integer }}))
+        |> Enum.filter(&(user[to_dashium_case.(&1)] !== (params[&1] |> String.to_integer)))
+        |> Enum.map(&({ "$set", %{ to_dashium_case.(&1) => params[&1] |> String.to_integer }}))
 
-    modified_icons =
-      if params["iconType"] !== nil do
-        modified_icons ++ [{ "$set", [ icon_type: params["iconType"] ] }]
-      else
-        modified_icons
-      end
-
+    modified_icons = modified_icons ++ [{ "$set", %{ icon_type: params["iconType"] } }]
     Mongo.update_one(:mongo, "users", [id: id], modified_stats ++ modified_icons ++ modified_coins)
   end
 
@@ -177,8 +171,8 @@ defmodule Models.User do
         ":21:#{user.icon_id}",
         ":22:#{user.ship_id}",
         ":23:#{user.ball_id}",
-        ":24:#{user.ufo_id}",
-        ":25:#{user.wave_id}",
+        ":24:#{user.bird_id}",
+        ":25:#{user.dart_id}",
         ":26:#{user.robot_id}",
         ":27:#{user.trail_id}",
         ":28:#{user.glow_id}",
