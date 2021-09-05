@@ -1,6 +1,5 @@
 defmodule Plugs.Validator do
   import Plug.Conn
-  alias Models.Account, as: Account
 
   def init(options) do
     options

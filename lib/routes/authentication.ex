@@ -2,8 +2,6 @@ defmodule Routes.Authentication do
   use Routes.Base
   alias Models.Account, as: Account
 
-  require Logger
-
   defp check_constraints_auth(required_fields, map) do
     fields = [
       # [ field, confirmation_field?, confirmation_error? ]
@@ -47,7 +45,7 @@ defmodule Routes.Authentication do
     end
   end
 
-  post "/registerGJAccount.php" do
+  post "/database/accounts/registerGJAccount.php" do
     on_valid_request conn,
       ["email", "userName", "password", "confirmEmail", "confirmPassword"],
       [ "email", "userName", "password" ],
@@ -63,7 +61,7 @@ defmodule Routes.Authentication do
       end
   end
 
-  post "/loginGJAccount.php" do
+  post "/database/accounts/loginGJAccount.php" do
     fields = [ "userName", "password" ]
 
     on_valid_request conn, fields, fields, fn ->

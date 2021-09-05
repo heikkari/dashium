@@ -4,7 +4,7 @@ defmodule Routes.User do
   alias Models.User, as: User
   require Logger
 
-  post "/getGJUserInfo20.php" do
+  post "/database/getGJUserInfo20.php" do
     if Utils.is_field_missing [ "targetAccountID" ], conn.params do
       send(conn, 400, "-1")
     else
@@ -26,7 +26,7 @@ defmodule Routes.User do
     end
   end
 
-  post "/getGJUsers20.php" do
+  post "/database/getGJUsers20.php" do
     if Utils.is_field_missing [ "str" ], conn.params do
       send(conn, 400, "-1")
     else
@@ -39,7 +39,7 @@ defmodule Routes.User do
     end
   end
 
-  post "/updateGJAccSettings20.php" do
+  post "/database/updateGJAccSettings20.php" do
     if Utils.is_field_missing [ "accountID" ], conn.params do
       send(conn, 400, "-1")
     else
@@ -91,7 +91,7 @@ defmodule Routes.User do
     end
   end
 
-  post "/updateGJUserScore22.php" do
+  post "/database/updateGJUserScore22.php" do
     fields = [
       "accountID", "userCoins", "demons", "stars",
       "coins", "iconType", "icon", "diamonds",
