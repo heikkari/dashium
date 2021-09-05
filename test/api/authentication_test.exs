@@ -2,7 +2,7 @@ defmodule Api.AuthenticationTest do
   use ExUnit.Case
   use Plug.Test
 
-  test "Testing authentication" do
+  test "authentication" do
     # Test registration
     [params | [ reply | _ ] ] = Utils.test_register()
     assert reply.state   == :sent

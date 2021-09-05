@@ -20,7 +20,7 @@ defmodule Api.UserTest do
     { :ok, params: params, id: id, gjp: Utils.gjp(params.password, false) }
   end
 
-  test "Testing /getGJUserInfo20.php", state do
+  test "getGJUserInfo20.php", state do
     # Get user by ID
     reply = conn(:post, @user_info, %{ targetAccountID: state.id })
       |> put_req_header("content-type", @content_type)
@@ -30,7 +30,7 @@ defmodule Api.UserTest do
     assert reply.status  == 200
   end
 
-  test "Testing /getGJUsers20.php", state do
+  test "getGJUsers20.php", state do
     # Search for user
     reply = conn(:post, @user_search, %{ str: state.params.userName })
       |> put_req_header("content-type", @content_type)
@@ -40,7 +40,7 @@ defmodule Api.UserTest do
     assert reply.status  == 200
   end
 
-  test "Testing /updateGJAccSettings20.php", state do
+  test "updateGJAccSettings20.php", state do
     # Update the user
     reply = conn(:post, @user_update, %{ accountID: state.id, gjp: state.gjp, mS: 1 })
       |> put_req_header("content-type", @content_type)
@@ -50,7 +50,7 @@ defmodule Api.UserTest do
     assert reply.status  == 200
   end
 
-  test "Testing /updateGJUserScore22.php", state do
+  test "updateGJUserScore22.php", state do
     fields = [
       accountID: state.id,
       userCoins: 3, demons: 2, stars: 40,
