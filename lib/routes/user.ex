@@ -118,7 +118,6 @@ defmodule Routes.User do
       rescue
         ArgumentError -> send(conn, 400, "-1")
       end
-
     end
   end
 
