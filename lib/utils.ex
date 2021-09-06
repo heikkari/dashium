@@ -1,8 +1,6 @@
 defmodule Utils do
   use Plug.Test
 
-  @chars "qwertyuioasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890" |> String.split("")
-
   # Testing
   @options Router.init([])
   @register "/database/accounts/registerGJAccount.php"
@@ -10,8 +8,13 @@ defmodule Utils do
   @content_type "application/x-www-form-urlencoded"
 
   def random_string(length) do
-    Enum.reduce(1..length, [], fn _, acc -> [Enum.random(@chars) | acc] end)
-      |> Enum.join("")
+    :crypto.strong_rand_bytes(length / 2 |> Kernel.trunc)
+      |> Base.encode16
+      |> String.downcase
+  end
+
+  def random_udid() do
+    Enum.map([8, 4, 4, 4, 12], &(random_string(&1))) |> Enum.join("-")
   end
 
   def chk(values \\ [], key) when is_list(values) and is_atom(key) do

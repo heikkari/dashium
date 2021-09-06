@@ -1,27 +1,23 @@
 defmodule Routes.Rewards do
-  use Routes.Base
-
-  def salt(data, key) when is_atom(key) do
+  defp salt(data, key) when is_atom(key) do
     :crypto.hash(:sha, data <> Application.get_env(:app, :salt)[key])
       |> Base.encode16
       |> String.downcase
   end
 
-  def generate_quests() do
+  defp generate_quests() do
     Enum.map [ orbs: 1, coins: 2, stars: 3 ], fn {k, v} ->
-      [ names: names, min: min, max: max, diamond_multiplier: d ] =
-          Application.get_env(:app, :quest_amounts)[k]
-
+      [ names: names, min: min, max: max, diamond_multiplier: d ] = Application.get_env(:app, :quests)[k]
       amount = Enum.random(min..max)
 
-      ([ v, amount, amount * d ]
+      ([ v, amount, amount * d |> Kernel.trunc ]
         |> Enum.map(&(Integer.to_string &1)))
         ++ [Enum.random(names)]
         |> Enum.join(",")
     end
   end
 
-  def generate_reward(
+  defp generate_reward(
     udid,
     reward_type,
     user_id
@@ -33,26 +29,30 @@ defmodule Routes.Rewards do
     type = if reward_type === "1", do: :large, else: :small
 
     create_entry = fn ->
-      query = %{ udid: udid, large: 0, small: 0 }
+      query = %{ _id: udid, large: 0, small: 0 }
       Mongo.insert_one(:mongo, "rewards", query)
       { 0, 0 }
     end
 
-    { large, small } = case Mongo.find_one(:mongo, "rewards", %{ udid: udid }) do
+    { large, small } = case Mongo.find_one(:mongo, "rewards", %{ _id: udid }) do
       nil -> create_entry.()
       document -> { document["large"], document["small"] }
     end
 
     generate_chest = fn ->
       rewards = Application.get_env(:app, :rewards)
-      [ orbs: orbs, diamonds: diamonds, timeout_hours: timeout ] = rewards[type]
+      [
+        orbs: [ min: min_orbs, max: max_orbs ],
+        diamonds: [ min: min_diamonds, max: max_diamonds ],
+        timeout_hours: timeout
+      ] = rewards[type]
 
       until = DateTime.add(DateTime.utc_now(), timeout * 3600) |> DateTime.to_unix
-      Mongo.update_one(:mongo, "rewards", %{ udid: udid }, %{ "$set" => %{ type => until } })
+      Mongo.update_one(:mongo, "rewards", %{ _id: udid }, %{ "$set" => %{ type => until } })
 
       [
-        Enum.random(orbs.min..orbs.max),
-        Enum.random(diamonds.min..diamonds.max),
+        Enum.random(min_orbs..max_orbs),
+        Enum.random(min_diamonds..max_diamonds),
         Enum.random(1..4),
         Enum.random(0..1)
       ]
@@ -87,7 +87,7 @@ defmodule Routes.Rewards do
     "#{Utils.random_string(5)}#{str}|#{salt(str, :rewards)}"
   end
 
-  post "/database/getGJChallenges.php" do
+  defp get_challenges(conn) do
     get = &(if conn.params[&1] === nil, do: "0", else: conn.params[&1])
 
     attributes = [
@@ -99,19 +99,30 @@ defmodule Routes.Rewards do
     ]
 
     str = Utils.xor(attributes ++ generate_quests() |> Enum.join(":"), :quests) |> Base.encode64()
-    "#{Utils.random_string(5)}#{str}|#{salt(str, :quests)}"
+    { 200, "#{Utils.random_string(5)}#{str}|#{salt(str, :quests)}" }
   end
 
-  post "/database/getGJRewards.php" do
-    if Utils.is_field_missing [ "udid" ], conn.params do
-      send(conn, 400, "-1")
+  defp get_rewards(conn) do
+    if Utils.is_field_missing [ "udid", "rewardType" ], conn.params do
+      { 400, "-1" }
     else
-      if conn.params["udid"] |> String.trim === "" do
-        send(conn, 400, "-1")
+      udid = conn.params["udid"]
+
+      if String.length(udid) !== 36 or length(udid |> String.split("-")) !== 5 do
+        { 400, "-1" }
       else
         user_id = if conn.params["accountID"] === nil, do: "0", else: conn.params["accountID"]
-        generate_reward conn.params["udid"], conn.params["rewardType"], user_id
+        { 200, generate_reward(udid, conn.params["rewardType"], user_id) }
       end
+    end
+  end
+
+  @spec wire(Plug.Conn.t(), binary) :: nil | { integer, binary }
+  def wire(conn, route) when is_binary(route) do
+    case route do
+      "getGJRewards.php" -> get_rewards(conn)
+      "getGJChallenges.php" -> get_challenges(conn)
+      _ -> nil
     end
   end
 end

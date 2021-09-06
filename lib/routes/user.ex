@@ -1,47 +1,42 @@
 defmodule Routes.User do
-  use Routes.Base
-
   alias Models.User, as: User
-  require Logger
 
-  post "/database/getGJUserInfo20.php" do
+  defp get_user_info(conn) do
     if Utils.is_field_missing [ "targetAccountID" ], conn.params do
-      send(conn, 400, "-1")
+      { 400, "-1" }
     else
       try do
         id = conn.params["accountID"]
         target = conn.params["targetAccountID"]
         user = User.get(String.to_integer target)
 
-        send(
-          conn,
+        {
           (if user === -1, do: 404, else: 200),
-          (if user === -1, do: -1, else:
+          (if user === -1, do: "-1", else:
             user |> User.to_string(if id === nil or id === target, do: nil, else: String.to_integer id))
-        )
+        }
       rescue
         # Happens if the user provides an ID that is not an integer.
-        ArgumentError -> send(conn, 400, "-1")
+        ArgumentError -> { 400, "-1" }
       end
     end
   end
 
-  post "/database/getGJUsers20.php" do
+  defp search_users(conn) do
     if Utils.is_field_missing [ "str" ], conn.params do
-      send(conn, 400, "-1")
+      { 400, "-1" }
     else
       result = User.search conn.params["str"] |> String.trim
-      send(
-        conn,
+      {
         (if result === "", do: 404, else: 200),
         (if result === "", do: "-1", else: result)
-      )
+      }
     end
   end
 
-  post "/database/updateGJAccSettings20.php" do
+  defp update_settings(conn) do
     if Utils.is_field_missing [ "accountID" ], conn.params do
-      send(conn, 400, "-1")
+      { 400, "-1" }
     else
       try do
         id = conn.params["accountID"] |> String.to_integer
@@ -79,19 +74,18 @@ defmodule Routes.User do
           { :ok, _ } -> true
         end
 
-        send(
-          conn,
+        {
           (if result, do: 200, else: 500),
           (if result, do: "1", else: "-1")
-        )
+        }
       rescue
-        ArgumentError -> send(conn, 400, "-1")
+        ArgumentError -> { 400, "-1" }
       end
 
     end
   end
 
-  post "/database/updateGJUserScore22.php" do
+  defp update_score(conn) do
     fields = [
       "accountID", "userCoins", "demons", "stars",
       "coins", "iconType", "icon", "diamonds",
@@ -101,7 +95,7 @@ defmodule Routes.User do
     ]
 
     if Utils.is_field_missing fields ++ ["seed2"], conn.params do
-      send(conn, 400, "-1")
+      { 400, "-1" }
     else
       try do
         values = fields |> Enum.map(&(conn.params[&1]))
@@ -109,19 +103,26 @@ defmodule Routes.User do
 
         if chk === conn.params["seed2"] do
           case User.update_stats(conn.params) do
-            { :error, _ } -> send(conn, 500, "-1")
-            { :ok, _ } -> send(conn, 200, "1")
+            { :error, _ } -> { 500, "-1" }
+            { :ok, _ } -> { 200, "1" }
           end
         else
-          send(conn, 401, "-1")
+          { 401, "-1" }
         end
       rescue
-        ArgumentError -> send(conn, 400, "-1")
+        ArgumentError -> { 400, "-1" }
       end
     end
   end
 
-  match _ do
-    send_resp(conn, 404, "Not found!")
+  @spec wire(Plug.Conn.t(), binary) :: nil | { integer, binary }
+  def wire(conn, route) when is_binary(route) do
+    case route do
+      "updateGJUserScore22.php" -> update_score(conn)
+      "updateGJAccSettings20.php" -> update_settings(conn)
+      "getGJUserInfo20.php" -> get_user_info(conn)
+      "getGJUsers20.php" -> search_users(conn)
+      _ -> nil
+    end
   end
 end
