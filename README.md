@@ -1,5 +1,3 @@
-# Dashium
-
 <div style="text-align:center"><img src="assets/wordmark/wordmark.png" /></div>
 
 Dashium is a GDPS written in Elixir, a functional language for building scalable and maintainable applications, leveraging the Erlang VM known for running low-latency, distributed, and fault-tolerant systems.
