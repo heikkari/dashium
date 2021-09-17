@@ -6,8 +6,9 @@ defmodule App.Application do
   require Logger
 
   def start(_type, _args) do
-    %{ name: name, pool_size: pool_size } = Application.get_env(:app, :db_config)
-    port = Application.get_env(:app, :port)
+    env = Mix.env()
+    [ name: name, pool_size: pool_size ] = Application.get_env(:app, :db_config)[env]
+    port = Application.get_env(:app, :port)[env]
 
     children = [
       {Plug.Cowboy, scheme: :http, plug: Router, options: [port: port]},

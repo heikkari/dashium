@@ -21,7 +21,7 @@ defmodule Models.Account do
     end
   end
 
-  @spec login(binary, binary) :: { :error, boolean } | Integer
+  @spec login(binary, binary) :: { :error, boolean } | { :ok, User }
   def login(username, password) when is_binary(username) and is_binary(password) do
     case Mongo.find_one(:mongo, "users", %{ username: username }) do
       nil -> { :error, true }
