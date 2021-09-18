@@ -11,11 +11,11 @@ Dashium is a GDPS written in Elixir, a functional language for building scalable
 - [Credits](#credits)
 
 ## Installation
-
-1. [Install & run MongoDB](https://docs.mongodb.com/manual/installation/)
-2. [Install MongoSH](https://docs.mongodb.com/mongodb-shell/install/)
-3. Run the setup script: `mongosh < mongo_setup.js`
-4. Clone the repository: `git clone https://github.com/heikkari/dashium.git`
+1. Install the `erlang-dev` and `erlang-parsetools` packages. This will differ depending on your system.
+2. [Install & run MongoDB](https://docs.mongodb.com/manual/installation/)
+3. [Install MongoSH](https://docs.mongodb.com/mongodb-shell/install/)
+4. Run the setup script: `mongosh < mongo_setup.js`
+5. Clone the repository: `git clone https://github.com/heikkari/dashium.git`
 
 ## Usage
 
@@ -31,11 +31,16 @@ $ mix run --no-halt
 - 🚧 Scores
 - ✅ Rewards
 - ✅ Relationships
-- 🚧 Misc. (song info, account URL, ...)
+- ✅ Misc. (🚧 likeGJItem211)
 - 🔨 Messages
 - 🚧 Levels
 - 🚧 Level Packs
 - 🚧 Comments
+
+### TODO
+
+- Caching
+- Anti-cheat
 
 ## Contributing
 
@@ -63,3 +68,4 @@ $ git push -u origin your-feature
 - [argon2_elixir](https://github.com/riverrun/argon2_elixir)
 - [exconstructor](https://github.com/appcues/exconstructor)
 - [timex](https://github.com/bitwalker/timex)
+- [floki](https://github.com/philss/floki)
