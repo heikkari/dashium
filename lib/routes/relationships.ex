@@ -4,7 +4,6 @@ defmodule Routes.Relationships do
   alias Models.Message, as: Message
   alias Models.User, as: User
 
-
   def send_friend_request(sender, receiver, params)
     when is_integer(sender) and is_integer(receiver) and is_map(params)
   do

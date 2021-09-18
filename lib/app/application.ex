@@ -10,6 +10,10 @@ defmodule App.Application do
     [ name: name, pool_size: pool_size ] = Application.get_env(:app, :db_config)[env]
     port = Application.get_env(:app, :port)[env]
 
+    # Required for :httpc & :crypto
+    Application.ensure_all_started(:inets)
+    Application.ensure_all_started(:ssl)
+
     children = [
       {Plug.Cowboy, scheme: :http, plug: Router, options: [port: port]},
       %{

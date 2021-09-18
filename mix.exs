@@ -14,7 +14,7 @@ defmodule App.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :inets],
       mod: {App.Application, []}
     ]
   end
@@ -26,6 +26,7 @@ defmodule App.MixProject do
       {:mongodb_driver, "~> 0.6"},
       {:argon2_elixir, "~> 2.0"},
       {:exconstructor, "~> 1.2.4"},
+      {:floki, "~> 0.31.0"},
       {:timex, "~> 3.0"}
     ]
   end
