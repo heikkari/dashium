@@ -9,8 +9,11 @@ defmodule Routes.Relationships do
     when is_integer(sender) and is_integer(receiver) and is_map(params)
   do
     msg = params["comment"] || Base.encode64 "(No message provided)"
-    { _, msg } = Base.decode64(msg)
-    Relationship.send_friend_request(sender, receiver, msg)
+
+    case Base.decode64(msg) do
+      :error -> false
+      { :ok, decoded } -> Relationship.send_friend_request(sender, receiver, decoded)
+    end
   end
 
   @spec read_friend_request(map) :: nonempty_binary
