@@ -25,7 +25,8 @@ defmodule App.MixProject do
       {:plug_cowboy, "~> 2.2"},
       {:mongodb_driver, "~> 0.6"},
       {:argon2_elixir, "~> 2.0"},
-      {:exconstructor, "~> 1.2.4"}
+      {:exconstructor, "~> 1.2.4"},
+      {:timex, "~> 3.0"}
     ]
   end
 end

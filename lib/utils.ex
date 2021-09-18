@@ -76,4 +76,9 @@ defmodule Utils do
   end
 
   def gen_id(), do: System.system_time(:millisecond) - Application.get_env(:app, :id_epoch)
+
+  @spec id_to_unix(integer) :: integer
+  def id_to_unix(id) when is_integer(id) do
+    id + Application.get_env(:app, :id_epoch)
+  end
 end
