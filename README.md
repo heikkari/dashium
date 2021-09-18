@@ -29,10 +29,10 @@ $ mix run --no-halt
 - ✅ Authentication (login, register, GJP)
 - ✅ User Profiles (user info, user search, account settings, user score)
 - 🚧 Scores
-- 🚧 Rewards
-- 🚧 Relationships
+- ✅ Rewards
+- ✅ Relationships
 - 🚧 Misc. (song info, account URL, ...)
-- 🚧 Messages
+- 🔨 Messages
 - 🚧 Levels
 - 🚧 Level Packs
 - 🚧 Comments
@@ -62,3 +62,4 @@ $ git push -u origin your-feature
 - [mongodb_driver](https://github.com/zookzook/elixir-mongodb-driver)
 - [argon2_elixir](https://github.com/riverrun/argon2_elixir)
 - [exconstructor](https://github.com/appcues/exconstructor)
+- [timex](https://github.com/bitwalker/timex)
