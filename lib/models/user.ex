@@ -63,7 +63,7 @@ defmodule Models.User do
     else
       %{
         # List only unread messages
-        messages: Message.list_incoming_messages(user_id) |> Enum.filter(&(not &1.read)),
+        messages: Message.incoming(user_id) |> Enum.filter(&(not &1.read)),
         # List only incoming friend requests
         friend_requests: Relationship.of(user_id, 0)
         # Filter out all the outgoing friend requests

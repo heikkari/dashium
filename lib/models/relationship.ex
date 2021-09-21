@@ -52,8 +52,18 @@ defmodule Models.Relationship do
     when is_integer(sender) and is_integer(receiver)
   do
     case __MODULE__.with(sender, receiver) do
-      { :error, _ } -> true
+      { :error, _ } -> false
       { :ok, relationship } -> relationship.status == 2
+    end
+  end
+
+  @spec are_friends(integer, integer) :: boolean
+  def are_friends(sender, receiver)
+    when is_integer(sender) and is_integer(receiver)
+  do
+    case __MODULE__.with(sender, receiver) do
+      { :error, _ } -> false
+      { :ok, relationship } -> relationship.status == 1
     end
   end
 
@@ -66,13 +76,15 @@ defmodule Models.Relationship do
     when is_integer(sender) and is_integer(receiver) and is_binary(msg)
   do
     operation = fn ->
-      create(sender, receiver, 0)
-      Models.Message.send(sender, receiver, 1, "Friend request", msg)
+      x = create(sender, receiver, 0)
+      y = Models.Message.send(sender, receiver, 1, "Friend request", msg)
+      x and y
     end
 
     cond do
       sender === receiver -> false
       is_blocked sender, receiver -> false
+      are_friends sender, receiver -> false
       true -> operation.()
     end
   end

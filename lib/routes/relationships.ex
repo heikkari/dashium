@@ -69,15 +69,20 @@ defmodule Routes.Relationships do
       |> Enum.join("|")
   end
 
-  @spec delete_relation(integer, integer, integer) :: boolean
-  def delete_relation(sender, receiver, status_condition)
+  @spec delete_relationship(integer, integer, integer) :: boolean
+  def delete_relationship(sender, receiver, status_condition)
     when is_integer(sender) and is_integer(receiver)
       and is_integer(status_condition)
   do
+    op = fn r ->
+      IO.inspect r
+      false
+    end
+
     case Relationship.with(sender, receiver) do
       { :error, nil } -> false
       { :ok, relationship } -> if relationship.status !== status_condition,
-        do: false, else: Relationship.delete(sender, receiver)
+        do: op.(relationship), else: Relationship.delete(sender, receiver)
     end
   end
 
@@ -109,9 +114,9 @@ defmodule Routes.Relationships do
             case route do
               "acceptGJFriendRequest20.php" -> Relationship.accept_friend_request(sender, receiver)
               "blockGJUser20.php" -> Relationship.block(sender, receiver)
-              "deleteGJFriendRequests20.php" -> delete_relation(sender, receiver, 0)
-              "removeGJFriend20.php" -> delete_relation(sender, receiver, 1)
-              "unblockGJUser20.php" -> delete_relation(sender, receiver, 2)
+              "deleteGJFriendRequests20.php" -> delete_relationship(sender, receiver, 0)
+              "removeGJFriend20.php" -> delete_relationship(sender, receiver, 1)
+              "unblockGJUser20.php" -> delete_relationship(sender, receiver, 2)
               "uploadGJFriendRequest20.php" -> send_friend_request(sender, receiver, conn.params)
               _ -> nil
             end
