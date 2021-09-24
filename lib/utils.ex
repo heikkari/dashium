@@ -93,23 +93,27 @@ defmodule Utils do
 
   def song_info(id) when is_integer(id) do
     song_server = Application.get_env(:app, :song_server)
-    response = :httpc.request(:get, {"#{song_server}/audio/listen/#{id}", []}, [], [])
+    response = :httpc.request(:get, {"#{song_server}#{id}", []}, [], [])
 
-    if response |> elem(0) !== :error do
+    if response |> elem(0) === :error do
       { :error, :couldnt_connect_to_server }
     else
       { :ok, document } = Floki.parse_document(response |> elem(1) |> elem(2))
 
       # Get song name & artist
       [ { _, _, [ song | _ ] } | _ ] = Floki.find(document, "title")
-      [ { _, _, [ artist | _ ] } | _ ] = Floki.find(document, "h4")
-      [ { _, [ { "href", url } | _ ], _ } | _ ] = Floki.find(document, ".icon-download")
+      [ { _, _, [ elem | _ ] } | _ ] = Floki.find(document, "h4")
+      [ { "a", attributes, _ } | _ ] = Floki.find(document, ".icon-download")
+
+      # ---
+      { _, _, [ artist | _ ] } = elem
+      url = Enum.into(attributes, %{})["href"]
 
       # Get song file size
       headers = :httpc.request(:head, { url, [] }, [], []) |> elem(1) |> elem(1) |> Enum.into(%{})
-      size_mb = (headers['content-length'] |> String.to_integer()) / 1048576 |> Float.ceil(2)
+      size_mb = (headers['content-length'] |> List.to_string |> String.to_integer) / 1048576 |> Float.ceil(2)
 
-      { :ok, [ song: song, id: id, artist: artist, size: size_mb, url: url ] }
+      { :ok, %{ song: song, id: id, artist: artist, size: size_mb, url: url } }
     end
   end
 end

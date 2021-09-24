@@ -35,7 +35,7 @@ defmodule Routes.Miscellaneous do
         song_id = params["songID"] |> String.to_integer
         { :ok, info } = Utils.song_info(song_id)
         parts = [ 1, song_id, 2, info.song, 3, "", 4, info.artist, 5, info.size, 6, "", 7, "", 10, info.url ]
-        { 200, parts |> Enum.map("~|~") }
+        { 200, parts |> Enum.join("~|~") }
       rescue
         _ -> { 500, "-1" }
       end
@@ -50,6 +50,7 @@ defmodule Routes.Miscellaneous do
       "getGJTopArtists.php" -> top_artists(conn.params)
       "getSaveData.php" -> { 200, Utils.random_string(32) |> Base.encode64 }
       "requestUserAccess.php" -> request_user_access(conn.params)
+      _ -> nil
     end
   end
 end

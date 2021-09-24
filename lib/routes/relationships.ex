@@ -74,15 +74,10 @@ defmodule Routes.Relationships do
     when is_integer(sender) and is_integer(receiver)
       and is_integer(status_condition)
   do
-    op = fn r ->
-      IO.inspect r
-      false
-    end
-
     case Relationship.with(sender, receiver) do
       { :error, nil } -> false
       { :ok, relationship } -> if relationship.status !== status_condition,
-        do: op.(relationship), else: Relationship.delete(sender, receiver)
+        do: false, else: Relationship.delete(sender, receiver)
     end
   end
 
