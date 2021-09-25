@@ -3,9 +3,10 @@ defmodule Api.MiscellaneousTest do
   use Plug.Test
 
   @options Router.init([])
-  @artists_top "/database/getGJTopArtists.php"
-  @info_song "/database/getGJSongInfo.php"
-  @user_access_request "/database/requestUserAccess.php"
+  @base "/database/"
+  @artists_top "getGJTopArtists.php"
+  @info_song "getGJSongInfo.php"
+  @user_access_request "requestUserAccess.php"
   @content_type "application/x-www-form-urlencoded"
 
   setup_all do
@@ -22,7 +23,7 @@ defmodule Api.MiscellaneousTest do
   test "song info" do
     data = %{ "songID" => "1079735" }
 
-    reply = conn(:post, @info_song, data)
+    reply = conn(:post, @base <> @info_song, data)
       |> put_req_header("content-type", @content_type)
       |> Router.call(@options)
 
@@ -31,7 +32,7 @@ defmodule Api.MiscellaneousTest do
   end
 
   test "top artists" do
-    reply = conn(:post, @artists_top)
+    reply = conn(:post, @base <> @artists_top)
       |> put_req_header("content-type", @content_type)
       |> Router.call(@options)
 
@@ -42,7 +43,7 @@ defmodule Api.MiscellaneousTest do
   test "mod level", state do
     data = %{ accountID: state.id, gjp: state.gjp }
 
-    reply = conn(:post, @user_access_request, data)
+    reply = conn(:post, @base <> @user_access_request, data)
       |> put_req_header("content-type", @content_type)
       |> Router.call(@options)
 

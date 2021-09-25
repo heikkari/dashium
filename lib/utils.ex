@@ -91,6 +91,17 @@ defmodule Utils do
     id + Application.get_env(:app, :id_epoch)
   end
 
+  @spec between(binary, binary, binary) :: list
+  def between(str, x, y)
+    when is_binary(str)
+      and is_binary(x)
+      and is_binary(y)
+  do
+    { :ok, regex } = Regex.compile("(?<=#{x})(.*)(?=#{y})")
+    Regex.scan(regex, str)
+  end
+
+  @spec song_info(integer) :: { :ok | :error, :couldnt_connect_to_server | map }
   def song_info(id) when is_integer(id) do
     song_server = Application.get_env(:app, :song_server)
     response = :httpc.request(:get, {"#{song_server}#{id}", []}, [], [])

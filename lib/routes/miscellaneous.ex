@@ -2,9 +2,9 @@ defmodule Routes.Miscellaneous do
   alias Models.User, as: User
 
   @spec request_user_access(map) :: { 200 | 400 | 500, binary }
-  def request_user_access(params) when is_map(params) do
+  defp request_user_access(params) when is_map(params) do
     if Utils.is_field_missing ["accountID"], params do
-      { 400, "-1" }
+      { 401, "-1" }
     else
       try do
         user = User.get(params["accountID"] |> String.to_integer())
@@ -16,7 +16,7 @@ defmodule Routes.Miscellaneous do
   end
 
   @spec top_artists(map) :: { 200 | 500, binary }
-  def top_artists(params) when is_map(params) do
+  defp top_artists(params) when is_map(params) do
     try do
       url = Application.get_env(:app, :top_artists)
       request = {url, [], 'application/x-www-form-urlencoded', 'secret=Wmfd2893gb7&page=1' }
@@ -27,7 +27,7 @@ defmodule Routes.Miscellaneous do
   end
 
   @spec song_info(map) :: { 200 | 400 | 500, binary }
-  def song_info(params) when is_map(params) do
+  defp song_info(params) when is_map(params) do
     if Utils.is_field_missing ["songID"], params do
       { 400, "-1" }
     else

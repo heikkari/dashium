@@ -1,10 +1,9 @@
 defmodule Routes.Relationships do
-  alias Timex.Format.DateTime.Formatters.Relative, as: RelativeTime
   alias Models.Relationship, as: Relationship
   alias Models.Message, as: Message
   alias Models.User, as: User
 
-  def send_friend_request(sender, receiver, params)
+  defp send_friend_request(sender, receiver, params)
     when is_integer(sender) and is_integer(receiver) and is_map(params)
   do
     msg = params["comment"] || Base.encode64 "(No message provided)"
@@ -16,13 +15,13 @@ defmodule Routes.Relationships do
   end
 
   @spec read_friend_request(map) :: nonempty_binary
-  def read_friend_request(params) when is_map(params) do
+  defp read_friend_request(params) when is_map(params) do
     r_id = params["requestID"] |> String.to_integer
     if Message.mark_as_read(r_id), do: "1", else: "-1"
   end
 
   @spec list_users(map) :: list
-  def list_users(params) when is_map(params) do
+  defp list_users(params) when is_map(params) do
     id = params["accountID"] |> String.to_integer
     list_blocked = if (params["type"] || "0") === "1", do: true, else: false
 
@@ -34,7 +33,7 @@ defmodule Routes.Relationships do
   end
 
   @spec list_friend_requests(map) :: binary
-  def list_friend_requests(params) when is_map(params) do
+  defp list_friend_requests(params) when is_map(params) do
     # ---
     id = params["accountID"] |> String.to_integer
     outgoing = if (params["getSent"] || "0") === "1", do: true, else: false
@@ -52,11 +51,7 @@ defmodule Routes.Relationships do
         content = Base.encode64(msg.content)
 
         # Calculate relative time
-        diff = System.system_time(:millisecond) - Utils.id_to_unix(msg._id)
-        age = case Timex.shift(Timex.now, milliseconds: diff) |> RelativeTime.format("{relative}") do
-          { :ok, time } -> time
-          _ -> "an unknown time ago"
-        end
+        age = Message.age(msg)
 
         [
           "1:#{u.username}", "2:#{u._id}", "9:#{u.icon_id}",
@@ -70,7 +65,7 @@ defmodule Routes.Relationships do
   end
 
   @spec delete_relationship(integer, integer, integer) :: boolean
-  def delete_relationship(sender, receiver, status_condition)
+  defp delete_relationship(sender, receiver, status_condition)
     when is_integer(sender) and is_integer(receiver)
       and is_integer(status_condition)
   do
@@ -85,7 +80,7 @@ defmodule Routes.Relationships do
   def wire(conn, route) when is_binary(route) do
     if Utils.is_field_missing [ "targetAccountID" ], conn.params do
       if Utils.is_field_missing [ "accountID" ], conn.params do
-        { 400, -1 }
+        { 401, -1 }
       else
         try do
           s = case route do

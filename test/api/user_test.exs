@@ -3,10 +3,11 @@ defmodule Api.UserTest do
   use Plug.Test
 
   @options Router.init([])
-  @user_search "/database/getGJUsers20.php"
-  @user_info "/database/getGJUserInfo20.php"
-  @user_update "/database/updateGJAccSettings20.php"
-  @user_score "/database/updateGJUserScore22.php"
+  @base "/database/"
+  @user_search "getGJUsers20.php"
+  @user_info "getGJUserInfo20.php"
+  @user_update "updateGJAccSettings20.php"
+  @user_score "updateGJUserScore22.php"
   @content_type "application/x-www-form-urlencoded"
 
   setup_all do
@@ -22,7 +23,7 @@ defmodule Api.UserTest do
 
   test "getGJUserInfo20.php", state do
     # Get user by ID
-    reply = conn(:post, @user_info, %{ targetAccountID: state.id })
+    reply = conn(:post, @base <> @user_info, %{ targetAccountID: state.id })
       |> put_req_header("content-type", @content_type)
       |> Router.call(@options)
 
@@ -32,7 +33,7 @@ defmodule Api.UserTest do
 
   test "getGJUsers20.php", state do
     # Search for user
-    reply = conn(:post, @user_search, %{ str: state.params.userName })
+    reply = conn(:post, @base <> @user_search, %{ str: state.params.userName })
       |> put_req_header("content-type", @content_type)
       |> Router.call(@options)
 
@@ -42,7 +43,7 @@ defmodule Api.UserTest do
 
   test "updateGJAccSettings20.php", state do
     # Update the user
-    reply = conn(:post, @user_update, %{ accountID: state.id, gjp: state.gjp, mS: 1 })
+    reply = conn(:post, @base <> @user_update, %{ accountID: state.id, gjp: state.gjp, mS: 1 })
       |> put_req_header("content-type", @content_type)
       |> Router.call(@options)
 
@@ -63,7 +64,7 @@ defmodule Api.UserTest do
     chk = Utils.chk(Enum.map(fields, fn {_, v} -> v end), :user_profile)
     fields = fields ++ [ seed2: chk, gjp: state.gjp ]
 
-    reply = conn(:post, @user_score, fields)
+    reply = conn(:post, @base <> @user_score, fields)
       |> put_req_header("content-type", @content_type)
       |> Router.call(@options)
 

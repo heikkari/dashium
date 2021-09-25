@@ -3,21 +3,22 @@ defmodule Api.RelationshipsTest do
   use Plug.Test
 
   @options Router.init([])
-  @friend_add "/database/uploadGJFriendRequest20.php"
-  @friend_accept "/database/acceptGJFriendRequest20.php"
-  @friend_remove "/database/removeGJFriend20.php"
-  @friends_list "/database/getGJUserList20.php"
-  @user_block "/database/blockGJUser20.php"
-  @user_unblock "/database/unblockGJUser20.php"
-  @freq_remove "/database/deleteGJFriendRequests20.php"
-  @freq_list "/database/getGJFriendRequests20.php"
+  @base "/database/"
+  @friend_add "uploadGJFriendRequest20.php"
+  @friend_accept "acceptGJFriendRequest20.php"
+  @friend_remove "removeGJFriend20.php"
+  @friends_list "getGJUserList20.php"
+  @user_block "blockGJUser20.php"
+  @user_unblock "unblockGJUser20.php"
+  @freq_remove "deleteGJFriendRequests20.php"
+  @freq_list "getGJFriendRequests20.php"
   @content_type "application/x-www-form-urlencoded"
 
   @spec confirm_relationship_endpoint(any, binary) :: none
   def confirm_relationship_endpoint(state, endpoint) when is_binary(endpoint) do
     data = %{ accountID: state.first[:id], targetAccountID: state.second[:id], gjp: state.first[:gjp] }
 
-    reply = conn(:post, endpoint, data)
+    reply = conn(:post, @base <> endpoint, data)
       |> put_req_header("content-type", @content_type)
       |> Router.call(@options)
 
@@ -52,7 +53,7 @@ defmodule Api.RelationshipsTest do
   test "list incoming friend requests", state do
     data = %{ accountID: state.first[:id], gjp: state.first[:gjp] }
 
-    reply = conn(:post, @freq_list, data)
+    reply = conn(:post, @base <> @freq_list, data)
       |> put_req_header("content-type", @content_type)
       |> Router.call(@options)
 
@@ -72,7 +73,7 @@ defmodule Api.RelationshipsTest do
   test "list friends", state do
     data = %{ accountID: state.first[:id], gjp: state.first[:gjp] }
 
-    reply = conn(:post, @friends_list, data)
+    reply = conn(:post, @base <> @friends_list, data)
       |> put_req_header("content-type", @content_type)
       |> Router.call(@options)
 

@@ -36,7 +36,7 @@ defmodule Routes.User do
 
   defp update_settings(conn) do
     if Utils.is_field_missing [ "accountID" ], conn.params do
-      { 400, "-1" }
+      { 401, "-1" }
     else
       try do
         id = conn.params["accountID"] |> String.to_integer

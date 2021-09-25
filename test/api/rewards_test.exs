@@ -3,12 +3,13 @@ defmodule Api.RewardsTest do
   use Plug.Test
 
   @options Router.init([])
-  @get_challenges "/database/getGJChallenges.php"
-  @get_rewards "/database/getGJRewards.php"
+  @base "/database/"
+  @get_challenges "getGJChallenges.php"
+  @get_rewards "getGJRewards.php"
   @content_type "application/x-www-form-urlencoded"
 
   test "challenges" do
-    reply = conn(:post, @get_challenges)
+    reply = conn(:post, @base <> @get_challenges)
       |> put_req_header("content-type", @content_type)
       |> Router.call(@options)
 
@@ -17,7 +18,9 @@ defmodule Api.RewardsTest do
   end
 
   test "rewards" do
-    reply = conn(:post, @get_rewards, %{ rewardType: "1", udid: Utils.random_udid() })
+    query = %{ rewardType: "1", udid: Utils.random_udid() }
+
+    reply = conn(:post, @base <> @get_rewards, query)
       |> put_req_header("content-type", @content_type)
       |> Router.call(@options)
 

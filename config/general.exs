@@ -32,3 +32,6 @@ config :app, rewards: %{
     timeout_hours: 24
   ]
 }
+
+# Pagination
+config :app, limit: 10

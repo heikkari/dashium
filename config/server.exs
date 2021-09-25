@@ -13,7 +13,8 @@ config :app, xor: [
   authentication: "37526",
   user_profile: "85271",
   quests: "19847",
-  rewards: "59182"
+  rewards: "59182",
+  messages: "14251"
 ]
 
 # Salts
@@ -25,5 +26,4 @@ config :app, salt: [
 
 config :app, save_server: "http://localhost:#{Application.get_env(:app, :port)[Mix.env()]}"
 config :app, song_server: "https://www.newgrounds.com/audio/listen/"
-config :app, audio_file_server: "https://audio.ngfiles.com/"
-config :app, top_artists: "http://boomlings.com/database/getGJTopArtists.php"
+config :app, top_artists: "http://www.boomlings.com/database/getGJTopArtists.php"
