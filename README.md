@@ -10,11 +10,12 @@ Dashium is a GDPS written in Elixir, a functional language for building scalable
 - [Credits](#credits)
 
 ## Installation
-1. Install the `erlang-dev` and `erlang-parsetools` packages. This will differ depending on your system.
-2. [Install & run MongoDB](https://docs.mongodb.com/manual/installation/)
-3. [Install MongoSH](https://docs.mongodb.com/mongodb-shell/install/)
-4. Run the setup script: `mongosh < mongo_setup.js`
-5. Clone the repository: `git clone https://github.com/heikkari/dashium.git`
+1. [Install Elixir & Erlang](https://elixir-lang.org/install.html)
+2. Install the `erlang-dev` and `erlang-parsetools` packages. This will differ depending on your system.
+3. [Install & run MongoDB](https://docs.mongodb.com/manual/installation/)
+4. [Install MongoSH](https://docs.mongodb.com/mongodb-shell/install/)
+5. Run the setup script: `mongosh < mongo_setup.js`
+6. Clone the repository: `git clone https://github.com/heikkari/dashium.git`
 
 ## Usage
 
