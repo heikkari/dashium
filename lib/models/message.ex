@@ -28,13 +28,17 @@ defmodule Models.Message do
 
   @spec delete(integer, integer) :: boolean
   def delete(id, sender) when is_integer(id) and is_integer(sender) do
-    { status, _ } = if get(id).from === sender do
-      Mongo.delete_one(:mongo, "messages", %{ _id: id })
-    else
-      Mongo.update_one(:mongo, "messages", %{ _id: id }, %{ "$set" => %{ hide: true } })
+    result = case get(id) do
+      { :error, :message_not_found } -> { :error }
+      { :ok, msg } ->
+        if msg.from === sender do
+          Mongo.delete_one(:mongo, "messages", %{ _id: id })
+        else
+          Mongo.update_one(:mongo, "messages", %{ _id: id }, %{ "$set" => %{ hide: true } })
+        end
     end
 
-    status === :ok
+    (result |> elem(0)) !== :error
   end
 
   @spec mark_as_read(integer) :: boolean
@@ -52,28 +56,31 @@ defmodule Models.Message do
   end
 
   @spec to_string(Models.Message, integer) :: binary
-  def to_string(message, sender) when is_integer(sender) do
-    list = [
-      message._id,
-      message.from,
-      message.from,
-      message.subject |> Base.encode64,
-      message.content |> Utils.xor(:messages) |> Base.encode64,
-      User.get(message.from).username,
-      age(message),
-      (if message.read, do: "1", else: "0"),
-      (if message.from === sender, do: "1", else: "0")
-    ]
+  def to_string(message, sender)
+    when
+      is_struct(message) or is_map(message)
+      and is_integer(sender)
+  do
+    case User.get(message.from) do
+      -1 -> "-1"
+      user -> (fn ->
+        list = [
+          message._id,
+          message.from,
+          message.from,
+          message.subject |> Base.encode64,
+          message.content |> Utils.xor(:messages) |> Base.encode64,
+          user.username,
+          Utils.age(message),
+          (if message.read, do: "1", else: "0"),
+          (if message.from === sender, do: "1", else: "0")
+        ]
 
-    1..length(list) |> Stream.zip(list) |> Enum.into(%{})
-  end
-
-  @spec age(Models.Message) :: binary
-  def age(msg) do
-    diff = System.system_time(:millisecond) - Utils.id_to_unix(msg._id)
-    case Timex.shift(Timex.now, milliseconds: diff) |> RelativeTime.format("{relative}") do
-      { :ok, time } -> time
-      _ -> "an unknown time ago"
+        1..length(list)
+          |> Stream.zip(list)
+          |> Enum.flat_map(fn {x, y} -> [x, y] end)
+          |> Enum.join(":")
+      end).()
     end
   end
 

@@ -25,7 +25,7 @@ defmodule Api.MessagesTest do
   end
 
   defp act_message(state, endpoint) do
-    [ message_id | _ ] = list_messages(state) |> Utils.between("1:", ":") |> elem(0)
+    message_id = list_messages(state) |> String.split(":") |> Enum.at(1)
     data = %{ accountID: state.first[:id], messageID: message_id, gjp: state.first[:gjp] }
 
     reply = conn(:post, @base <> endpoint, data)
@@ -69,10 +69,6 @@ defmodule Api.MessagesTest do
 
   test "list messages", state do
     list_messages(state)
-  end
-
-  test "get message", state do
-    act_message(state, @message_get)
   end
 
   test "delete message", state do

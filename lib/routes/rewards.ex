@@ -117,12 +117,16 @@ defmodule Routes.Rewards do
     end
   end
 
-  @spec wire(Plug.Conn.t(), binary) :: nil | { integer, binary }
-  def wire(conn, route) when is_binary(route) do
+  @spec list :: list
+  def list() do
+    [ "getGJRewards.php", "getGJChallenges.php" ]
+  end
+
+  @spec exec(Plug.Conn.t(), binary) :: { integer, binary }
+  def exec(conn, route) when is_binary(route) do
     case route do
       "getGJRewards.php" -> get_rewards(conn)
       "getGJChallenges.php" -> get_challenges(conn)
-      _ -> nil
     end
   end
 end

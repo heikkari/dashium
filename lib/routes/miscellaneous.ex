@@ -1,8 +1,8 @@
 defmodule Routes.Miscellaneous do
   alias Models.User, as: User
 
-  @spec request_user_access(map) :: { 200 | 400 | 500, binary }
-  defp request_user_access(params) when is_map(params) do
+  @spec mod(map) :: { 200 | 400 | 500, binary }
+  defp mod(params) when is_map(params) do
     if Utils.is_field_missing ["accountID"], params do
       { 401, "-1" }
     else
@@ -42,15 +42,25 @@ defmodule Routes.Miscellaneous do
     end
   end
 
-  @spec wire(Plug.Conn.t(), binary) :: { integer, binary }
-  def wire(conn, route) when is_binary(route) do
+  @spec list :: list
+  def list() do
+    [
+      "getAccountURL.php",
+      "getGJSongInfo.php",
+      "getGJTopArtists.php",
+      "getSaveData.php",
+      "requestUserAccess.php"
+    ]
+  end
+
+  @spec exec(Plug.Conn.t(), binary) :: { integer, binary }
+  def exec(conn, route) when is_binary(route) do
     case route do
       "getAccountURL.php" -> { 200, Application.get_env(:app, :save_server) }
       "getGJSongInfo.php" -> song_info(conn.params)
       "getGJTopArtists.php" -> top_artists(conn.params)
       "getSaveData.php" -> { 200, Utils.random_string(32) |> Base.encode64 }
-      "requestUserAccess.php" -> request_user_access(conn.params)
-      _ -> nil
+      "requestUserAccess.php" -> mod(conn.params)
     end
   end
 end

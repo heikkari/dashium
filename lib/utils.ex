@@ -91,14 +91,13 @@ defmodule Utils do
     id + Application.get_env(:app, :id_epoch)
   end
 
-  @spec between(binary, binary, binary) :: list
-  def between(str, x, y)
-    when is_binary(str)
-      and is_binary(x)
-      and is_binary(y)
-  do
-    { :ok, regex } = Regex.compile("(?<=#{x})(.*)(?=#{y})")
-    Regex.scan(regex, str)
+  @spec age(map) :: binary
+  def age(%{ "_id" => id } = model) when is_struct(model) or is_map(model) do
+    diff = System.system_time(:millisecond) - (Utils.id_to_unix(id) + 2)
+    case Timex.shift(Timex.now, milliseconds: diff) |> RelativeTime.format("{relative}") do
+      { :ok, time } -> time
+      _ -> "an unknown time ago"
+    end
   end
 
   @spec song_info(integer) :: { :ok | :error, :couldnt_connect_to_server | map }
@@ -107,7 +106,7 @@ defmodule Utils do
     response = :httpc.request(:get, {"#{song_server}#{id}", []}, [], [])
 
     if response |> elem(0) === :error do
-      { :error, :couldnt_connect_to_server }
+      { :error, "Couldn't connect to server" }
     else
       { :ok, document } = Floki.parse_document(response |> elem(1) |> elem(2))
 

@@ -197,7 +197,6 @@ defmodule Models.User do
     if relationship["status"] === 2 do
       # Refuse request if blocked
       [ _ | [ blockee | _ ] ] = relationship["user_ids"]
-      IO.inspect [user_id, blockee]
       if blockee == user_id, do: "-1", else: load_profile.(1)
     else
       load_profile.(0)

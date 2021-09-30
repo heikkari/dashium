@@ -98,9 +98,15 @@ defmodule Models.Relationship do
   do
     case __MODULE__.with(sender, receiver) do
       { :error, nil } -> false
-      { :ok, document } -> if document.status === 0,
-        do: update(sender, receiver, 1),
-        else: false
+      { :ok, r } -> (fn r -> 
+        if sender !== (r.user_ids |> Enum.at(1)) do
+          false
+        else
+          if r.status === 0,
+            do: update(sender, receiver, 1),
+            else: false
+        end 
+      end).(r)
     end
   end
 

@@ -14,7 +14,7 @@ defmodule Plugs.Authentication do
   end
 
   defp authenticate(conn) do
-    user_id = conn.params["accountID"]
+    user_id = conn.params["accountID"] || conn.params["userID"]
     gjp = conn.params["gjp"]
 
     if user_id !== nil do

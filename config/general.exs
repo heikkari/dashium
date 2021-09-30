@@ -35,3 +35,14 @@ config :app, rewards: %{
 
 # Pagination
 config :app, limit: 10
+
+# If a comment's like to dislike ratio is less than this, it will be flagged as spam.
+# Likes / Dislikes
+config :app, spam_ratio: 5 / 15
+
+# Mod color
+config :app, mod_colors: %{
+  0 => [ 0xFF, 0xFF, 0xFF ], # Regular user
+  1 => [ 0x00, 0xFF, 0x44 ], # Mod
+  2 => [ 0x00, 0xFF, 0xFF ], # Elder Mod
+}

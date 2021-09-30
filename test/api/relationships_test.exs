@@ -67,7 +67,14 @@ defmodule Api.RelationshipsTest do
 
   test "accept friend request", state do
     send_friend_request(state)
-    confirm_relationship_endpoint(state, @friend_accept)
+
+    data = %{ accountID: state.second[:id], targetAccountID: state.first[:id], gjp: state.second[:gjp] }
+    reply = conn(:post, @base <> @friend_accept, data)
+      |> put_req_header("content-type", @content_type)
+      |> Router.call(@options)
+
+    assert reply.state   == :sent
+    assert reply.status  == 200
   end
 
   test "list friends", state do
@@ -81,15 +88,15 @@ defmodule Api.RelationshipsTest do
     assert reply.status  == 200
   end
 
+  test "remove friend", state do
+    confirm_relationship_endpoint(state, @friend_remove)
+  end
+
   test "block user", state do
     confirm_relationship_endpoint(state, @user_block)
   end
 
   test "unblock user", state do
     confirm_relationship_endpoint(state, @user_unblock)
-  end
-
-  test "remove friend", state do
-    confirm_relationship_endpoint(state, @friend_remove)
   end
 end

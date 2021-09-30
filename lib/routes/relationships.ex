@@ -76,52 +76,55 @@ defmodule Routes.Relationships do
     end
   end
 
-  @spec wire(Plug.Conn.t(), binary) :: { integer, binary }
-  def wire(conn, route) when is_binary(route) do
+  @spec list :: list
+  def list() do
+    [
+      "getGJFriendRequests20.php",
+      "getGJUserList20.php",
+      "readGJFriendRequest20.php",
+      "acceptGJFriendRequest20.php",
+      "blockGJUser20.php",
+      "deleteGJFriendRequests20.php",
+      "removeGJFriend20.php",
+      "unblockGJUser20.php",
+      "uploadGJFriendRequest20.php"
+    ]
+  end
+
+  @spec exec(Plug.Conn.t(), binary) :: { integer, binary }
+  def exec(conn, route) when is_binary(route) do
     if Utils.is_field_missing [ "targetAccountID" ], conn.params do
       if Utils.is_field_missing [ "accountID" ], conn.params do
         { 401, -1 }
       else
-        try do
-          s = case route do
-            "getGJFriendRequests20.php" -> list_friend_requests(conn.params)
-            "getGJUserList20.php" -> list_users(conn.params)
-            "readGJFriendRequest20.php" -> read_friend_request(conn.params)
-          end
-
-          { 200, (if s !== "", do: s, else: "-2") }
-        rescue
-          _ -> { 500, "-1" }
+        s = case route do
+          "getGJFriendRequests20.php" -> list_friend_requests(conn.params)
+          "getGJUserList20.php" -> list_users(conn.params)
+          "readGJFriendRequest20.php" -> read_friend_request(conn.params)
         end
+
+        { 200, (if s !== "", do: s, else: "-2") }
       end
     else
-      try do
-        sender = conn.params["accountID"] |> String.to_integer
-        receiver = conn.params["targetAccountID"] |> String.to_integer
+      sender = conn.params["accountID"] |> String.to_integer
+      receiver = conn.params["targetAccountID"] |> String.to_integer
 
-        if sender !== receiver do
-          success =
-            case route do
-              "acceptGJFriendRequest20.php" -> Relationship.accept_friend_request(sender, receiver)
-              "blockGJUser20.php" -> Relationship.block(sender, receiver)
-              "deleteGJFriendRequests20.php" -> delete_relationship(sender, receiver, 0)
-              "removeGJFriend20.php" -> delete_relationship(sender, receiver, 1)
-              "unblockGJUser20.php" -> delete_relationship(sender, receiver, 2)
-              "uploadGJFriendRequest20.php" -> send_friend_request(sender, receiver, conn.params)
-              _ -> nil
-            end
-
-          case success do
-            true -> { 200, "1" }
-            false -> { 500, "-1" }
-            nil -> { 404, "Not found" }
+      if sender !== receiver do
+        success =
+          case route do
+            "acceptGJFriendRequest20.php" -> Relationship.accept_friend_request(sender, receiver)
+            "blockGJUser20.php" -> Relationship.block(sender, receiver)
+            "deleteGJFriendRequests20.php" -> delete_relationship(sender, receiver, 0)
+            "removeGJFriend20.php" -> delete_relationship(sender, receiver, 1)
+            "unblockGJUser20.php" -> delete_relationship(sender, receiver, 2)
+            "uploadGJFriendRequest20.php" -> send_friend_request(sender, receiver, conn.params)
           end
-        else
-          { 409, "-1" }
-        end
-      rescue
-        ArgumentError -> { 400, "-1" }
-        _ -> { 500, "-1" }
+
+        if success,
+          do: { 200, "1" },
+          else: { 500, "-1" }
+      else
+        { 409, "-1" }
       end
     end
   end
