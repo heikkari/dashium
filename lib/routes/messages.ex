@@ -7,14 +7,14 @@ defmodule Routes.Messages do
       and is_integer(sender)
       and is_boolean(get_sent)
   do
-    Message.of(sender, (params["page"] || "0") |> String.to_integer, get_sent)
+    Message.of(sender, (params["page"] || "0") |> Utils.maybe_to_integer, get_sent)
       |> Enum.map(fn message -> message |> Message.to_string(sender) end)
       |> Enum.join("|")
   end
 
   @spec upload(map, integer) :: boolean
   defp upload(params, sender) when is_map(params) and is_integer(sender) do
-    receiver = params["toAccountID"] |> String.to_integer
+    receiver = params["toAccountID"] |> Utils.maybe_to_integer
     [ subject | [ body | _ ]] = [ "subject", "body" ]
       |> Enum.map(fn field -> params[field] |> Base.decode64 |> elem(1) end)
     Message.send(sender, receiver, 0, subject, body)
@@ -35,7 +35,7 @@ defmodule Routes.Messages do
     if Utils.is_field_missing ["accountID"], conn.params do
       { 401, "-1" }
     else
-      sender = conn.params["accountID"] |> String.to_integer
+      sender = conn.params["accountID"] |> Utils.maybe_to_integer
 
       response = if Utils.is_field_missing ["messageID"], conn.params do
         case route do
@@ -46,7 +46,7 @@ defmodule Routes.Messages do
           "uploadGJMessage20.php" -> upload(conn.params, sender)
         end
       else
-        id = conn.params["messageID"] |> String.to_integer
+        id = conn.params["messageID"] |> Utils.maybe_to_integer
 
         case route do
           "deleteGJMessages20.php" -> Message.delete(id, sender)

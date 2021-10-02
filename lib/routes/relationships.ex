@@ -16,13 +16,13 @@ defmodule Routes.Relationships do
 
   @spec read_friend_request(map) :: nonempty_binary
   defp read_friend_request(params) when is_map(params) do
-    r_id = params["requestID"] |> String.to_integer
+    r_id = params["requestID"] |> Utils.maybe_to_integer
     if Message.mark_as_read(r_id), do: "1", else: "-1"
   end
 
   @spec list_users(map) :: list
   defp list_users(params) when is_map(params) do
-    id = params["accountID"] |> String.to_integer
+    id = params["accountID"] |> Utils.maybe_to_integer
     list_blocked = if (params["type"] || "0") === "1", do: true, else: false
 
     Relationship.of(id, (if list_blocked, do: 2, else: 1))
@@ -35,7 +35,7 @@ defmodule Routes.Relationships do
   @spec list_friend_requests(map) :: binary
   defp list_friend_requests(params) when is_map(params) do
     # ---
-    id = params["accountID"] |> String.to_integer
+    id = params["accountID"] |> Utils.maybe_to_integer
     outgoing = if (params["getSent"] || "0") === "1", do: true, else: false
 
     # Get the user's relationships
@@ -106,8 +106,8 @@ defmodule Routes.Relationships do
         { 200, (if s !== "", do: s, else: "-2") }
       end
     else
-      sender = conn.params["accountID"] |> String.to_integer
-      receiver = conn.params["targetAccountID"] |> String.to_integer
+      sender = conn.params["accountID"] |> Utils.maybe_to_integer
+      receiver = conn.params["targetAccountID"] |> Utils.maybe_to_integer
 
       if sender !== receiver do
         success =

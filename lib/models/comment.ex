@@ -27,7 +27,12 @@ defmodule Models.Comment do
               5 => comment.dislikes,
               6 => comment._id,
               7 => (
-                if comment.likes / comment.dislikes < Application.get_env(:app, :spam_ratio),
+                if comment.likes / (
+                  case comment.dislikes do
+                    0 -> 1
+                    n -> n
+                  end
+                ) < Application.get_env(:app, :spam_ratio),
                 do: 0,
                 else: 1
               ),
@@ -35,7 +40,7 @@ defmodule Models.Comment do
               9 => Utils.age(comment),
               10 => comment.percent,
               11 => user.mod_level,
-              12 => Application.get_env(:app, :spam_ratio)[user.mod_level]
+              12 => Application.get_env(:app, :mod_colors)[user.mod_level]
                 |> Enum.map(fn value -> Integer.to_string(value, 16) end)
                 |> Enum.join(",")
             },

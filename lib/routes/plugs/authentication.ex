@@ -21,7 +21,7 @@ defmodule Plugs.Authentication do
       if gjp === nil do
         send_401(conn)
       else
-        if not Account.auth(user_id |> String.to_integer, gjp |> to_string),
+        if not Account.auth(user_id |> Utils.maybe_to_integer, gjp |> to_string),
           do: send_401(conn), else: conn
       end
     else

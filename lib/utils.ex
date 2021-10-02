@@ -1,11 +1,21 @@
 defmodule Utils do
   use Plug.Test
+  alias Timex.Format.DateTime.Formatters.Relative, as: RelativeTime
 
   # Testing
   @options Router.init([])
   @register "/database/accounts/registerGJAccount.php"
   @login "/database/accounts/loginGJAccount.php"
   @content_type "application/x-www-form-urlencoded"
+
+  @spec maybe_to_integer(binary | integer) :: integer
+  def maybe_to_integer(term) do
+    cond do
+      is_binary(term) -> String.to_integer(term)
+      is_integer(term) -> term
+      true -> throw "Not a binary or integer"
+    end
+  end
 
   @spec random_string(integer) :: binary
   def random_string(length) do
@@ -91,9 +101,12 @@ defmodule Utils do
     id + Application.get_env(:app, :id_epoch)
   end
 
-  @spec age(map) :: binary
-  def age(%{ "_id" => id } = model) when is_struct(model) or is_map(model) do
+  @spec age(map | struct) :: binary
+  def age(model) when is_struct(model) or is_map(model) do
+    model = Map.from_struct(model)
+    id = model[:_id] || model["_id"]
     diff = System.system_time(:millisecond) - (Utils.id_to_unix(id) + 2)
+
     case Timex.shift(Timex.now, milliseconds: diff) |> RelativeTime.format("{relative}") do
       { :ok, time } -> time
       _ -> "an unknown time ago"
@@ -121,7 +134,7 @@ defmodule Utils do
 
       # Get song file size
       headers = :httpc.request(:head, { url, [] }, [], []) |> elem(1) |> elem(1) |> Enum.into(%{})
-      size_mb = (headers['content-length'] |> List.to_string |> String.to_integer) / 1048576 |> Float.ceil(2)
+      size_mb = (headers['content-length'] |> List.to_string |> Utils.maybe_to_integer) / 1048576 |> Float.ceil(2)
 
       { :ok, %{ song: song, id: id, artist: artist, size: size_mb, url: url } }
     end

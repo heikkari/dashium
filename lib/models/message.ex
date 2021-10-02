@@ -1,5 +1,4 @@
 defmodule Models.Message do
-  alias Timex.Format.DateTime.Formatters.Relative, as: RelativeTime
   alias Models.Relationship, as: Relationship
   alias Models.User, as: User
 

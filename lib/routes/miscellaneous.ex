@@ -7,7 +7,7 @@ defmodule Routes.Miscellaneous do
       { 401, "-1" }
     else
       try do
-        user = User.get(params["accountID"] |> String.to_integer())
+        user = User.get(params["accountID"] |> Utils.maybe_to_integer())
         { 200, (if user.mod_level > 0, do: "1", else: "-1") }
       rescue
         _ -> { 500, "-1" }
@@ -32,7 +32,7 @@ defmodule Routes.Miscellaneous do
       { 400, "-1" }
     else
       try do
-        song_id = params["songID"] |> String.to_integer
+        song_id = params["songID"] |> Utils.maybe_to_integer
         { :ok, info } = Utils.song_info(song_id)
         parts = [ 1, song_id, 2, info.song, 3, "", 4, info.artist, 5, info.size, 6, "", 7, "", 10, info.url ]
         { 200, parts |> Enum.join("~|~") }

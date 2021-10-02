@@ -7,12 +7,12 @@ defmodule Routes.User do
     else
       id = conn.params["accountID"]
       target = conn.params["targetAccountID"]
-      user = User.get(String.to_integer target)
+      user = User.get(Utils.maybe_to_integer target)
 
       {
         (if user === -1, do: 404, else: 200),
         (if user === -1, do: "-1", else:
-          user |> User.to_string(if id === nil or id === target, do: nil, else: String.to_integer id))
+          user |> User.to_string(if id === nil or id === target, do: nil, else: Utils.maybe_to_integer id))
       }
     end
   end
@@ -33,7 +33,7 @@ defmodule Routes.User do
     if Utils.is_field_missing [ "accountID" ], conn.params do
       { 401, "-1" }
     else
-      id = conn.params["accountID"] |> String.to_integer
+      id = conn.params["accountID"] |> Utils.maybe_to_integer
       mapped_fields = %{
         "message_state" => [ key: "mS", min: 0, max: 2 ],
         "friends_state" => [ key: "frS", min: 0, max: 1 ],

@@ -82,7 +82,7 @@ defmodule Models.User do
   } = params)
     when is_map(params)
   do
-    user = get(id |> String.to_integer) |> Map.from_struct
+    user = get(id |> Utils.maybe_to_integer) |> Map.from_struct
     anti_cheat_settings = Application.get_env(:app, :anti_cheat)
 
     modified_stats =
@@ -121,8 +121,8 @@ defmodule Models.User do
     modified_icons =
       Map.keys(params)
         |> Enum.filter(&(&1 |> String.slice(0..3) === "acc"))
-        |> Enum.filter(&(user[to_dashium_case.(&1)] !== (params[&1] |> String.to_integer)))
-        |> Enum.map(&({ "$set", %{ to_dashium_case.(&1) => params[&1] |> String.to_integer }}))
+        |> Enum.filter(&(user[to_dashium_case.(&1)] !== (params[&1] |> Utils.maybe_to_integer)))
+        |> Enum.map(&({ "$set", %{ to_dashium_case.(&1) => params[&1] |> Utils.maybe_to_integer }}))
 
     modified_icons = modified_icons ++ [{ "$set", %{ icon_type: params["iconType"] } }]
     Mongo.update_one(:mongo, "users", [id: id], modified_stats ++ modified_icons ++ modified_coins)

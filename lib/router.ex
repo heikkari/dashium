@@ -1,7 +1,11 @@
 defmodule Router do
   use Plug.Router
 
-  @modules [ Routes.User, Routes.Rewards, Routes.Miscellaneous, Routes.Relationships, Routes.Messages ]
+  @modules [
+    Routes.User, Routes.Rewards,
+    Routes.Miscellaneous, Routes.Relationships,
+    Routes.Messages, Routes.Comments
+  ]
 
   if Mix.env !== :test do
     plug Plug.Logger
